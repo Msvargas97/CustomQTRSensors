@@ -76,7 +76,7 @@ class QTRSensors
     // not returned; instead, the maximum and minimum values found
     // over time are stored internally and used for the
     // readCalibrated() method.
-    void calibrate(unsigned char readMode = QTR_EMITTERS_ON);
+    unsigned char calibrate(unsigned char readMode = QTR_EMITTERS_ON);
 
     // Resets all calibration that has been done.
     void resetCalibration();
@@ -152,7 +152,7 @@ class QTRSensors
     // Handles the actual calibration. calibratedMinimum and
     // calibratedMaximum are pointers to the requested calibration
     // arrays, which will be allocated if necessary.
-    void calibrateOnOrOff(unsigned int **calibratedMinimum,
+    unsigned char calibrateOnOrOff(unsigned int **calibratedMinimum,
                           unsigned int **calibratedMaximum,
                           unsigned char readMode);
 };

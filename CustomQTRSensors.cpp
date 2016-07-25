@@ -198,12 +198,13 @@ void QTRSensors::restoreCalibration()
 // calibration.  The sensor values are not returned; instead, the
 // maximum and minimum values found over time are stored internally
 // and used for the readCalibrated() method.
-void QTRSensors::calibrate(unsigned char readMode)
+unsigned char QTRSensors::calibrate(unsigned char readMode)
 {
+	static unsigned char position;
 	readModeCalibrate = readMode; 
     if(readMode == QTR_EMITTERS_ON_AND_OFF || readMode == QTR_EMITTERS_ON)
     {
-        calibrateOnOrOff(&calibratedMinimumOn,
+       position = calibrateOnOrOff(&calibratedMinimumOn,
                          &calibratedMaximumOn,
                          QTR_EMITTERS_ON);
     }
@@ -211,13 +212,14 @@ void QTRSensors::calibrate(unsigned char readMode)
 
     if(readMode == QTR_EMITTERS_ON_AND_OFF || readMode == QTR_EMITTERS_OFF)
     {
-        calibrateOnOrOff(&calibratedMinimumOff,
+       position = calibrateOnOrOff(&calibratedMinimumOff,
                          &calibratedMaximumOff,
                          QTR_EMITTERS_OFF);
     }
+	return position;
 }
 
-void QTRSensors::calibrateOnOrOff(unsigned int **calibratedMinimum,
+unsigned char QTRSensors::calibrateOnOrOff(unsigned int **calibratedMinimum,
                                         unsigned int **calibratedMaximum,
                                         unsigned char readMode)
 {
@@ -225,7 +227,7 @@ void QTRSensors::calibrateOnOrOff(unsigned int **calibratedMinimum,
     unsigned int sensor_values[16];
     unsigned int max_sensor_values[16];
     unsigned int min_sensor_values[16];
-
+	static unsigned char positionSensors;
     // Allocate the arrays if necessary.
     if(*calibratedMaximum == 0)
     {
@@ -233,7 +235,7 @@ void QTRSensors::calibrateOnOrOff(unsigned int **calibratedMinimum,
 
         // If the malloc failed, don't continue.
         if(*calibratedMaximum == 0)
-            return;
+            return 1;
 
         // Initialize the max and min calibrated values to values that
         // will cause the first reading to update them.
@@ -247,7 +249,7 @@ void QTRSensors::calibrateOnOrOff(unsigned int **calibratedMinimum,
 
         // If the malloc failed, don't continue.
         if(*calibratedMinimum == 0)
-            return;
+            return 1;
 
         for(i=0;i<_numSensors;i++)
             (*calibratedMinimum)[i] = _maxValue;
@@ -257,8 +259,15 @@ void QTRSensors::calibrateOnOrOff(unsigned int **calibratedMinimum,
     for(j=0;j<10;j++)
     {
         read(sensor_values,readMode);
-        for(i=0;i<_numSensors;i++)
+		
+		//Retornan dicho valor para saber si estan en linea los sensores y realizar una calibracion automatica
+		if(sensor_values[0] >= (_maxValue-100)) positionSensors = 0b100;
+		else if (sensor_values[(_numSensors/2)] >= (_maxValue-100) && sensor_values[(_numSensors/2)-1] >= (_maxValue-100)) positionSensors = 0b010;
+		else if(sensor_values[(_numSensors-1)] >= (_maxValue-100)) positionSensors = 0b001;
+
+		for(i=0;i<_numSensors;i++)
         {
+			
             // set the max we found THIS time
             if(j == 0 || max_sensor_values[i] < sensor_values[i])
                 max_sensor_values[i] = sensor_values[i];
@@ -277,6 +286,8 @@ void QTRSensors::calibrateOnOrOff(unsigned int **calibratedMinimum,
         if(max_sensor_values[i] < (*calibratedMinimum)[i])
             (*calibratedMinimum)[i] = max_sensor_values[i];
     }
+
+	return positionSensors;
 }
 
 

@@ -20,6 +20,7 @@ Funciones añadidas:
 QTRSensorsRC qtrrc((unsigned char[]) {A5,A4,A3,A2,A1,A0,254,8},
   NUM_SENSORS, TIMEOUT, EMITTER_PIN); 
 unsigned int sensorValues[NUM_SENSORS];
+unsigned int position;
 
 void setup(){
 delay(500);
@@ -29,7 +30,7 @@ delay(500);
   Serial.println("Calibrando Sensores...");
   for (int i = 0; i < 400; i++)  // make the calibration take about 10 seconds
   {
-    qtrrc.calibrate();       // reads all sensors 10 times at 2500 us per read (i.e. ~25 ms per call)
+		position = qtrrc.calibrate();       // reads all sensors 10 times at 2500 us per read (i.e. ~25 ms per call)
   }
   digitalWrite(13, LOW);     // turn off Arduino's LED to indicate we are through with calibration
 
@@ -53,7 +54,7 @@ void loop()
   // read calibrated sensor values and obtain a measure of the line position from 0 to 5000
   // To get raw sensor values, call:
   //  qtrrc.read(sensorValues); instead of unsigned int position = qtrrc.readLine(sensorValues);
-  unsigned int position = qtrrc.readLine(sensorValues);
+  position = qtrrc.readLine(sensorValues);
 
   // print the sensor values as numbers from 0 to 1000, where 0 means maximum reflectance and
   // 1000 means minimum reflectance, followed by the line position

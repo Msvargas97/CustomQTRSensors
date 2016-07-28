@@ -36,7 +36,7 @@
 QTRSensorsAnalog qtra((unsigned char[]) {0, 1, 2, 3, 4, 5}, 
   NUM_SENSORS, NUM_SAMPLES_PER_SENSOR, EMITTER_PIN);
 unsigned int sensorValues[NUM_SENSORS];
-
+unsigned int position;
 
 void setup()
 {
@@ -45,7 +45,7 @@ void setup()
   digitalWrite(13, HIGH);    // turn on Arduino's LED to indicate we are in calibration mode
   for (int i = 0; i < 400; i++)  // make the calibration take about 10 seconds
   {
-    qtra.calibrate();       // reads all sensors 10 times at 2.5 ms per six sensors (i.e. ~25 ms per call)
+    position = qtra.calibrate();       // reads all sensors 10 times at 2.5 ms per six sensors (i.e. ~25 ms per call)
   }
   digitalWrite(13, LOW);     // turn off Arduino's LED to indicate we are through with calibration
 
@@ -75,7 +75,7 @@ void loop()
   // read calibrated sensor values and obtain a measure of the line position from 0 to 5000
   // To get raw sensor values, call:
   //  qtra.read(sensorValues); instead of unsigned int position = qtra.readLine(sensorValues);
-  unsigned int position = qtra.readLine(sensorValues);
+  position = qtra.readLine(sensorValues);
   
   // print the sensor values as numbers from 0 to 1000, where 0 means maximum reflectance and
   // 1000 means minimum reflectance, followed by the line position

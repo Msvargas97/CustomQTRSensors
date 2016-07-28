@@ -498,6 +498,7 @@ void QTRSensorsRC::readPrivate(unsigned int *sensor_values)
     for(i = 0; i < _numSensors; i++)
     {
         sensor_values[i] = _maxValue;
+		#if defined(__AVR_ATmega32U4__)
 		if(_pins[i] == 254){
 			PORTE |= (1<<2);
 			DDRE |= (1<<2);
@@ -505,6 +506,10 @@ void QTRSensorsRC::readPrivate(unsigned int *sensor_values)
 	    digitalWrite(_pins[i], HIGH);   // make sensor line an output
         pinMode(_pins[i], OUTPUT);      // drive sensor line high
 		}
+		#else
+	    digitalWrite(_pins[i], HIGH);   // make sensor line an output
+        pinMode(_pins[i], OUTPUT);      // drive sensor line high
+		#endif
 
     }
 
@@ -512,6 +517,7 @@ void QTRSensorsRC::readPrivate(unsigned int *sensor_values)
 
     for(i = 0; i < _numSensors; i++)
     {
+		#if defined(__AVR_ATmega32U4__)
 		if(_pins[i] == 254){
 			DDRE &= ~(1<<2);
 			PORTE &= ~(1<<2);
@@ -519,7 +525,10 @@ void QTRSensorsRC::readPrivate(unsigned int *sensor_values)
 	    pinMode(_pins[i], INPUT);       // make sensor line an input
         digitalWrite(_pins[i], LOW);        // important: disable internal pull-up!
 		}
-       
+		#else
+	    pinMode(_pins[i], INPUT);       // make sensor line an input
+        digitalWrite(_pins[i], LOW);        // important: disable internal pull-up!	
+		#endif
     }
 
     unsigned long startTime = micros();
@@ -529,7 +538,9 @@ void QTRSensorsRC::readPrivate(unsigned int *sensor_values)
         for (i = 0; i < _numSensors; i++)
         {
             if (digitalRead(_pins[i]) == LOW && time < sensor_values[i] && _pins[i] != 254) sensor_values[i] = time;
+			#if defined(__AVR_ATmega32U4__) 
 			else if ((bitRead(PINE,2) == LOW && time < sensor_values[i]) && _pins[i] == 254) sensor_values[i] = time;
+			#endif
         }
     }
 }
